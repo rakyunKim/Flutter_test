@@ -8,6 +8,8 @@ import 'package:movie_website/widget/icon_searchbar.dart';
 import 'package:movie_website/widget/main_drawer.dart';
 import 'package:movie_website/widget/main_footer.dart';
 import 'package:movie_website/widget/main_widget/main_carousel_slider.dart';
+import 'package:movie_website/widget/main_widget/main_now_playing.dart';
+import 'package:movie_website/widget/main_widget/main_popular_movie.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -18,6 +20,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<MovieModel> _toprateMovie = [];
+  List<MovieModel> _nowPlaying = [];
+  List<MovieModel> _popularMovie = [];
   bool isLoading = true;
 
   @override
@@ -32,6 +36,8 @@ class _HomePageState extends State<HomePage> {
     var data = MovieData();
     try {
       _toprateMovie = await data.fetchTopRatedMovie();
+      _nowPlaying = await data.fetchNowPlayingMovie();
+      _popularMovie = await data.fetchPopularMovie();
       setState(() {
         isLoading = false;
       });
@@ -64,19 +70,19 @@ class _HomePageState extends State<HomePage> {
                 Flexible(
                   flex: 2,
                   child: Padding(
-                    padding: EdgeInsets.only(left: 16.0),
+                    padding: const EdgeInsets.only(left: 16.0),
                     child: isLoading
-                        ? CarouselSkeleton()
+                        ? const CarouselSkeleton()
                         : MainCarouselSlider(topratedMovies: _toprateMovie),
                   ),
                 ),
-                SizedBox(width: 20),
+                const SizedBox(width: 20),
                 Flexible(
                   flex: 1,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Padding(
+                      const Padding(
                         padding: EdgeInsets.symmetric(
                           horizontal: 16,
                           vertical: 8,
@@ -89,8 +95,13 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
                       ),
-                      SizedBox(height: 10),
-                      NowSkeleton(),
+                      SizedBox(
+                        width: 350,
+                        height: 470,
+                        child: isLoading ? const NowSkeleton()
+                        : NowPlayingMovie(nowPlayingMovies: _nowPlaying),
+                      ),
+                      const SizedBox(height: 10),
                     ],
                   ),
                 ),
@@ -106,12 +117,22 @@ class _HomePageState extends State<HomePage> {
             ),
             Padding(
               padding: const EdgeInsetsGeometry.symmetric(horizontal: 20),
-              child: LayoutBuilder(
+              child: isLoading 
+              ? LayoutBuilder(
                 builder: (context, constraints) {
                   double gridviewHeight = (constraints.maxWidth / 5) * 1.3 * 4;
                   return SizedBox(
                     height: gridviewHeight,
                     child: const PopularSkeleton(),
+                  );
+                },
+              )
+              :  LayoutBuilder(
+                builder: (context, constraints) {
+                  double gridviewHeight = (constraints.maxWidth / 5) * 1.3 * (_popularMovie.length) / 5;
+                  return SizedBox(
+                    height: gridviewHeight,
+                    child: MovieGridView(popularMovie: _popularMovie,),
                   );
                 },
               ),
